@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We"
+        crossorigin="anonymous"
+    >
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        .form-signin {
+            max-width: 330px;
+            padding: 1rem;
+        }
+
+        .form-signin .form-floating:focus-within {
+            z-index: 2;
+        }
+
+        .form-signin input[type="email"] {
+            margin-bottom: -1px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .form-signin input[type="password"] {
+            margin-bottom: 10px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+    </style>
+</head>
+<body class="d-flex py-4 bg-body-tertiary">
+    <main id="result" class="w-50 mt-5 mx-auto">
+        <form id="form">
+            <h1 class="h3 mb-3 fw-normal">Short link</h1>
+            <div>
+                <input
+                    type="text"
+                    name="url"
+                    class="form-control"
+		    aria-label="default"
+		    placeholder="https://example.com"
+                >
+            </div>
+            <button class="btn btn-primary w-100 mt-3 py-2" type="submit">get</button>
+        </form>
+    </main>
+</body>
+<script type="text/javascript">
+    const host = 'http://127.0.0.1:80'; // nginx
+    const $list = document.getElementById('result');
+	
+	function output(error, result) {
+		const $card = document.createElement('div');
+
+		if (error) {
+			$card.className = "mt-1 alert alert-danger";
+			$card.textContent = error;
+		} else {
+        	const $href = document.createElement('a');
+			$href.textContent = result;
+	        $href.href = result;
+        	$card.className = "alert";
+        	$card.append($href);
+		}
+
+		if ($list.childElementCount > 1) $list.replaceChild($card, $list.lastElementChild);
+		else $list.append($card);
+	}
+
+    async function submitHandler(e) {
+        e.preventDefault();
+        const url = new FormData(e.target).get('url');
+
+        try {
+		    const path = new URL(encodeURIComponent(url), `${host}/api/createShortURL/`);
+			const res = await fetch(path);
+			if (res.status === 200) {
+				const result = await res.json();
+            	output(null, host.concat('/', result?.shortUrl));
+			} else if (res.status === 400) output("Неверный URL адрес");
+			else output("Что-то пошло не так");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    document
+        .getElementById('form')
+        .addEventListener('submit', submitHandler);
+</script>
+</html>

@@ -9,7 +9,8 @@ class Controller {
             const fullUrl = await urlService.getFullUrl(shortURL);
 
             if (!fullUrl) {
-                res.sendStatus(404);
+                res.status(404);
+                res.redirect('/error_404.html');
                 return;
             }
 
